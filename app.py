@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 from flask_cors import CORS
+import requests
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +16,7 @@ model.eval()
 
 labels = ["Center", "Left", "Right"]  # Adjust based on your training
 
+# === Prediction Route ===
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
@@ -22,10 +25,8 @@ def predict():
     if not text:
         return jsonify({"error": "No text provided"}), 400
 
-    # Tokenize
     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
 
-    # Predict
     with torch.no_grad():
         outputs = model(**inputs)
         probs = torch.nn.functional.softmax(outputs.logits, dim=1)
@@ -37,10 +38,29 @@ def predict():
         "confidence": round(confidence, 3)
     })
 
+# === Proxy News API Route ===
+NEWS_API_KEY = "79e34d877d0e4b168de3864b7507ee50"
 
+@app.route("/news", methods=["GET"])
+def get_news():
+    query = request.args.get("q")
+    from_date = request.args.get("from", "2025-03-20")
+
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        "q": query,
+        "from": from_date,
+        "sortBy": "popularity",
+        "apiKey": NEWS_API_KEY,
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        return response.json(), response.status_code
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+# === Run the app ===
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
