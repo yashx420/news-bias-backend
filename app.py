@@ -9,7 +9,6 @@ app = Flask(__name__)
 CORS(app)
 
 # Load model & tokenizer
-model_path = "./news-bias-model"
 tokenizer = BertTokenizer.from_pretrained("yashx420/news-categorizer-model")
 model = BertForSequenceClassification.from_pretrained("yashx420/news-categorizer-model")
 model.eval()
