@@ -10,8 +10,8 @@ CORS(app)
 
 # Load model & tokenizer
 model_path = "./news-bias-model"
-tokenizer = BertTokenizer.from_pretrained(model_path)
-model = BertForSequenceClassification.from_pretrained(model_path)
+tokenizer = BertTokenizer.from_pretrained("yashx420/news-categorizer-model")
+model = BertForSequenceClassification.from_pretrained("yashx420/news-categorizer-model")
 model.eval()
 
 labels = ["Center", "Left", "Right"]  # Adjust based on your training
